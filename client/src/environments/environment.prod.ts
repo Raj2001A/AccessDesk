@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://accessdesk-api.onrender.com/api',
+  apiUrl: 'https://server-ashy-xi-67.vercel.app/api',
 };
