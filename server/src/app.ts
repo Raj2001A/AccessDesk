@@ -22,6 +22,11 @@ app.use(
 );
 app.use(express.json());
 
+// Health check endpoint for deployment probes
+app.get('/', (_req, res) => {
+  res.json({ status: 'healthy', service: 'AccessDesk API', timestamp: new Date().toISOString() });
+});
+
 // Public Auth routes
 app.use('/api/auth', authRoutes);
 
