@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { env } from './config/env';
+import { connectDB } from './config/db';
 import authRoutes from './routes/authRoutes';
 import recordRoutes from './routes/recordRoutes';
 import userRoutes from './routes/userRoutes';
@@ -21,6 +22,18 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Ensure Database is connected before processing requests in serverless environments
+app.use(async (_req, _res, next) => {
+  if (env.STORAGE === 'mongo') {
+    try {
+      await connectDB();
+    } catch (err) {
+      return next(err);
+    }
+  }
+  next();
+});
 
 // Health check endpoint for deployment probes
 app.get('/', (_req, res) => {
