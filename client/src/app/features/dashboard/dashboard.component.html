@@ -1,0 +1,166 @@
+<div class="dashboard-page">
+  <!-- Dashboard Top Header & Latency Control -->
+  <div class="dashboard-header-bar">
+    <div class="header-titles">
+      <h2>Operations & Records Dashboard</h2>
+      <p>Role-filtered record repository with real-time telemetry inspection</p>
+    </div>
+
+    <!-- Simulate Latency Control -->
+    <div class="latency-control-card glass-panel">
+      <span class="control-label">SIMULATE LATENCY:</span>
+      <div class="latency-buttons">
+        <button
+          *ngFor="let opt of latencyOptions"
+          type="button"
+          class="latency-btn"
+          [class.active]="selectedDelay() === opt.value"
+          (click)="onLatencyChange(opt.value)"
+        >
+          {{ opt.label }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Details Card with Parallel Skeleton Loader -->
+  <div class="user-profile-banner glass-panel">
+    <!-- Skeleton loader when profile is loading -->
+    <ng-container *ngIf="isProfileLoading(); else profileLoaded">
+      <div class="profile-skeleton-wrap">
+        <app-skeleton width="50px" height="50px" borderRadius="12px"></app-skeleton>
+        <div class="skeleton-text-lines">
+          <app-skeleton width="180px" height="20px"></app-skeleton>
+          <app-skeleton width="260px" height="16px"></app-skeleton>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Loaded Profile Data -->
+    <ng-template #profileLoaded>
+      <div class="profile-card-content" *ngIf="userProfile() as user">
+        <div class="profile-avatar">
+          {{ user.name.charAt(0) }}
+        </div>
+        <div class="profile-info">
+          <div class="profile-title-row">
+            <h3>{{ user.name }}</h3>
+            <span class="user-handle">&#64;{{ user.userId }}</span>
+            <app-badge [text]="user.role" variant="role"></app-badge>
+            <app-badge [text]="user.accessLevel" variant="access"></app-badge>
+          </div>
+          <p class="profile-meta">
+            <span>Security Tier: <strong>{{ user.accessLevel }}</strong></span>
+            <span class="dot-sep">&bull;</span>
+            <span>Last Login: <strong>{{ (user.lastLogin | date: 'medium') || 'First Session' }}</strong></span>
+            <span class="dot-sep">&bull;</span>
+            <span>Account: <strong [style.color]="user.isActive ? 'var(--success)' : 'var(--error)'">{{ user.isActive ? 'Active' : 'Inactive' }}</strong></span>
+          </p>
+        </div>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm refresh-btn"
+          (click)="loadInitialParallelData()"
+          title="Reload profile and records in parallel"
+        >
+          ↻ Refresh All
+        </button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Stat Cards Row -->
+  <div class="stat-cards-grid">
+    <!-- Card 1: Visible Records -->
+    <div class="stat-card glass-panel">
+      <div class="stat-header">
+        <span class="stat-label">RECORDS VISIBLE</span>
+        <span class="stat-icon">📄</span>
+      </div>
+      <div class="stat-value">
+        <span *ngIf="isRecordsLoading()">
+          <app-skeleton width="60px" height="36px"></app-skeleton>
+        </span>
+        <span *ngIf="!isRecordsLoading()">{{ totalRecords() }}</span>
+      </div>
+      <span class="stat-footnote">Permitted by current access tier</span>
+    </div>
+
+    <!-- Card 2: Records Hidden by Server RBAC -->
+    <div class="stat-card glass-panel">
+      <div class="stat-header">
+        <span class="stat-label">RECORDS HIDDEN</span>
+        <span class="stat-icon">🔒</span>
+      </div>
+      <div class="stat-value" [class.stat-warning]="hiddenRecordsCount() > 0">
+        <span *ngIf="isRecordsLoading()">
+          <app-skeleton width="60px" height="36px"></app-skeleton>
+        </span>
+        <span *ngIf="!isRecordsLoading()">{{ hiddenRecordsCount() }}</span>
+      </div>
+      <span class="stat-footnote">
+        {{ userProfile()?.role === Role.Admin ? 'Zero restrictions (Admin privileges)' : 'Filtered server-side (Confidential / Restricted)' }}
+      </span>
+    </div>
+
+    <!-- Card 3: Avg Response Time -->
+    <div class="stat-card glass-panel">
+      <div class="stat-header">
+        <span class="stat-label">AVG RESPONSE TIME</span>
+        <span class="stat-icon">⚡</span>
+      </div>
+      <div class="stat-value">
+        {{ requestLogService.averageDurationMs() }}<small>ms</small>
+      </div>
+      <span class="stat-footnote">Computed from live interceptor telemetry</span>
+    </div>
+
+    <!-- Card 4: Current Clearance -->
+    <div class="stat-card glass-panel">
+      <div class="stat-header">
+        <span class="stat-label">CURRENT CLEARANCE</span>
+        <span class="stat-icon">🛡️</span>
+      </div>
+      <div class="stat-value">
+        <app-badge [text]="userProfile()?.accessLevel || 'Internal'"></app-badge>
+      </div>
+      <span class="stat-footnote">
+        {{ userProfile()?.role === Role.Admin ? 'Unlimited repository visibility' : 'Only Public & Internal records' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Records Error Alert Banner -->
+  <div *ngIf="recordsError()" class="alert-banner alert-error" role="alert">
+    <span>⚠️ {{ recordsError() }}</span>
+    <button type="button" class="btn btn-sm btn-danger" (click)="triggerFetch()">
+      Retry Query
+    </button>
+  </div>
+
+  <!-- Main Grid: Records Data Table + Request Timeline -->
+  <div class="dashboard-content-grid">
+    <!-- Records Table Column -->
+    <section class="table-section">
+      <app-data-table
+        [columns]="tableColumns"
+        [data]="records()"
+        [total]="totalRecords()"
+        [page]="page()"
+        [limit]="limit()"
+        [totalPages]="totalPages()"
+        [isLoading]="isRecordsLoading()"
+        [currentSort]="currentSort()"
+        (pageChange)="onPageChange($event)"
+        (limitChange)="onLimitChange($event)"
+        (sortChange)="onSortChange($event)"
+        (searchChange)="onSearchChange($event)"
+      ></app-data-table>
+    </section>
+
+    <!-- Request Timeline Column -->
+    <aside class="timeline-section">
+      <app-request-timeline></app-request-timeline>
+    </aside>
+  </div>
+</div>

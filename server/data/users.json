@@ -1,0 +1,70 @@
+[
+  {
+    "userId": "admin1",
+    "name": "Alice Admin",
+    "role": "Admin",
+    "accessLevel": "Restricted",
+    "isActive": true,
+    "passwordHash": "$2b$10$deqFs039DaZwqVo9BS.NWuq45Td0knASiKL1XAIvMpVUUQ/T6eQuK",
+    "_id": "file_user_1791320807039_7cm4a",
+    "createdAt": "2026-10-06T21:06:47.039Z",
+    "updatedAt": "2026-10-06T21:19:48.542Z",
+    "lastLogin": "2026-10-06T21:19:48.540Z"
+  },
+  {
+    "userId": "admin2",
+    "name": "Bob Admin",
+    "role": "Admin",
+    "accessLevel": "Restricted",
+    "isActive": true,
+    "passwordHash": "$2b$10$deqFs039DaZwqVo9BS.NWuq45Td0knASiKL1XAIvMpVUUQ/T6eQuK",
+    "_id": "file_user_1791320807039_7irzm",
+    "createdAt": "2026-10-06T21:06:47.039Z",
+    "updatedAt": "2026-10-06T21:06:47.039Z"
+  },
+  {
+    "userId": "user1",
+    "name": "Charlie User",
+    "role": "General User",
+    "accessLevel": "Internal",
+    "isActive": true,
+    "passwordHash": "$2b$10$deqFs039DaZwqVo9BS.NWuq45Td0knASiKL1XAIvMpVUUQ/T6eQuK",
+    "_id": "file_user_1791320807039_hysg4",
+    "createdAt": "2026-10-06T21:06:47.039Z",
+    "updatedAt": "2026-10-06T21:13:24.298Z",
+    "lastLogin": "2026-10-06T21:13:24.296Z"
+  },
+  {
+    "userId": "user2",
+    "name": "Dave User",
+    "role": "General User",
+    "accessLevel": "Internal",
+    "isActive": true,
+    "passwordHash": "$2b$10$deqFs039DaZwqVo9BS.NWuq45Td0knASiKL1XAIvMpVUUQ/T6eQuK",
+    "_id": "file_user_1791320807039_j546u",
+    "createdAt": "2026-10-06T21:06:47.039Z",
+    "updatedAt": "2026-10-06T21:06:47.039Z"
+  },
+  {
+    "userId": "user3",
+    "name": "Eve User",
+    "role": "General User",
+    "accessLevel": "Internal",
+    "isActive": true,
+    "passwordHash": "$2b$10$deqFs039DaZwqVo9BS.NWuq45Td0knASiKL1XAIvMpVUUQ/T6eQuK",
+    "_id": "file_user_1791320807039_s8680",
+    "createdAt": "2026-10-06T21:06:47.039Z",
+    "updatedAt": "2026-10-06T21:06:47.039Z"
+  },
+  {
+    "userId": "user4",
+    "name": "Frank User",
+    "role": "General User",
+    "accessLevel": "Internal",
+    "isActive": true,
+    "passwordHash": "$2b$10$deqFs039DaZwqVo9BS.NWuq45Td0knASiKL1XAIvMpVUUQ/T6eQuK",
+    "_id": "file_user_1791320807039_2fcz5",
+    "createdAt": "2026-10-06T21:06:47.039Z",
+    "updatedAt": "2026-10-06T21:06:47.039Z"
+  }
+]

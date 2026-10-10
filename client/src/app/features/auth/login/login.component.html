@@ -1,0 +1,173 @@
+<div class="login-container">
+  <!-- Split Panel Left: Brand & Architecture Showcase -->
+  <div class="brand-panel">
+    <div class="brand-glow-circle circle-1"></div>
+    <div class="brand-glow-circle circle-2"></div>
+
+    <div class="brand-content">
+      <div class="brand-header">
+        <div class="brand-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span>Security & Access Gateway</span>
+        </div>
+        <h1 class="brand-title">AccessDesk</h1>
+        <p class="brand-tagline">
+          Zero-trust role-based records management portal with granular access levels and simulated network telemetry.
+        </p>
+      </div>
+
+      <div class="feature-pills">
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <div>
+            <h4>Server-Enforced RBAC</h4>
+            <p>Data access levels filtered strictly on backend queries</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <div>
+            <h4>Dual Storage Engine</h4>
+            <p>MongoDB Atlas & Local JSON repository pluggability</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⏱️</div>
+          <div>
+            <h4>Latency Simulation</h4>
+            <p>Real-time client telemetry & request timeline auditing</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-footer">
+        <span class="version-tag">AccessDesk v1.0.0</span>
+        <span>TypeScript Strict &bull; Angular Standalone</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Split Panel Right: Form Container -->
+  <div class="form-panel">
+    <div class="form-header-bar">
+      <!-- Theme Toggle Button -->
+      <button
+        type="button"
+        class="theme-toggle-btn"
+        (click)="themeService.toggleTheme()"
+        [attr.aria-label]="'Switch to ' + (themeService.currentTheme() === 'dark' ? 'light' : 'dark') + ' mode'"
+        title="Toggle Theme"
+      >
+        <span *ngIf="themeService.currentTheme() === 'dark'">☀️ Light Mode</span>
+        <span *ngIf="themeService.currentTheme() === 'light'">🌙 Dark Mode</span>
+      </button>
+    </div>
+
+    <div class="login-card glass-panel">
+      <div class="login-card-header">
+        <h2>Welcome Back</h2>
+        <p>Authenticate with your User ID, Password, and Role</p>
+      </div>
+
+      <!-- Error Banner -->
+      <div *ngIf="errorMessage()" class="alert-banner alert-error" role="alert">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+
+      <!-- Quick Demo Credentials Box -->
+      <div class="demo-box">
+        <span class="demo-label">Quick Test Autofill:</span>
+        <div class="demo-buttons">
+          <button type="button" class="btn btn-sm btn-secondary" (click)="fillDemo('admin')">
+            👑 Admin (admin1)
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary" (click)="fillDemo('user')">
+            👤 User (user1)
+          </button>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+        <!-- User ID Field -->
+        <div class="form-group">
+          <label for="userId">User ID</label>
+          <input
+            id="userId"
+            type="text"
+            formControlName="userId"
+            class="form-input"
+            [class.is-invalid]="loginForm.get('userId')?.invalid && loginForm.get('userId')?.touched"
+            placeholder="e.g. admin1 or user1"
+            autocomplete="username"
+          />
+          <div
+            *ngIf="loginForm.get('userId')?.invalid && loginForm.get('userId')?.touched"
+            class="form-error"
+          >
+            User ID is required (min 3 characters).
+          </div>
+        </div>
+
+        <!-- Password Field with Show/Hide -->
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-wrapper">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              class="form-input"
+              [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="toggle-pwd-btn"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            >
+              <span *ngIf="showPassword()">🙈</span>
+              <span *ngIf="!showPassword()">👁️</span>
+            </button>
+          </div>
+          <div
+            *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+            class="form-error"
+          >
+            Password is required (min 4 characters).
+          </div>
+        </div>
+
+        <!-- Role Selector Field -->
+        <div class="form-group">
+          <label for="role">Assigned Role</label>
+          <select id="role" formControlName="role" class="form-input select-input">
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+          <small class="form-hint">
+            Role must match account designation or server returns 403 Forbidden.
+          </small>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="btn btn-primary submit-btn"
+          [disabled]="isLoading() || loginForm.invalid"
+        >
+          <span *ngIf="isLoading()" class="spinner"></span>
+          <span>{{ isLoading() ? 'Verifying Credentials...' : 'Sign In to AccessDesk' }}</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

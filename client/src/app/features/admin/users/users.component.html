@@ -1,0 +1,391 @@
+<div class="admin-users-page">
+  <!-- Top Header Bar -->
+  <div class="page-header">
+    <div class="header-titles">
+      <h2>User Directory & Access Control</h2>
+      <p>Configure credentials, security clearances, and role delegations</p>
+    </div>
+
+    <div class="header-actions">
+      <!-- Search Box -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          class="form-input search-input"
+          placeholder="Filter by name, ID, role..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+        />
+      </div>
+
+      <!-- Refresh Button -->
+      <button
+        type="button"
+        class="btn btn-secondary icon-action-btn"
+        (click)="loadUsers()"
+        title="Refresh user list"
+        [disabled]="isLoading()"
+      >
+        <span [class.spin-icon]="isLoading()">↻</span>
+      </button>
+
+      <!-- Create New User Button -->
+      <button
+        type="button"
+        class="btn btn-primary create-btn"
+        (click)="openCreateModal()"
+      >
+        <span>＋ Create User</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Notification Banner -->
+  <div *ngIf="successMessage()" class="alert-banner alert-success" role="alert">
+    <span>✓ {{ successMessage() }}</span>
+  </div>
+
+  <!-- Error Notification Banner -->
+  <div *ngIf="errorMessage()" class="alert-banner alert-error" role="alert">
+    <span>⚠️ {{ errorMessage() }}</span>
+    <button
+      type="button"
+      class="close-banner-btn"
+      (click)="errorMessage.set(null)"
+      title="Dismiss"
+    >
+      ✕
+    </button>
+  </div>
+
+  <!-- Users Table Container -->
+  <div class="users-table-container glass-panel">
+    <div class="table-responsive">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Access Level</th>
+            <th>Status</th>
+            <th>Last Login</th>
+            <th class="th-actions">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <!-- Skeleton Loading Rows -->
+          <ng-container *ngIf="isLoading()">
+            <tr *ngFor="let dummy of [1, 2, 3, 4, 5]">
+              <td><app-skeleton width="140px" height="24px"></app-skeleton></td>
+              <td><app-skeleton width="90px" height="24px"></app-skeleton></td>
+              <td><app-skeleton width="100px" height="24px"></app-skeleton></td>
+              <td><app-skeleton width="70px" height="24px"></app-skeleton></td>
+              <td><app-skeleton width="110px" height="20px"></app-skeleton></td>
+              <td class="td-actions">
+                <app-skeleton width="100px" height="28px"></app-skeleton>
+              </td>
+            </tr>
+          </ng-container>
+
+          <!-- Real Data Rows -->
+          <ng-container *ngIf="!isLoading() && filteredUsers().length > 0">
+            <tr *ngFor="let u of filteredUsers()">
+              <!-- User Name & ID -->
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar-sm">
+                    {{ u.name.charAt(0) }}
+                  </div>
+                  <div class="user-cell-meta">
+                    <span class="user-fullname">{{ u.name }}</span>
+                    <span class="user-login-id">
+                      &#64;{{ u.userId }}
+                      <span *ngIf="isSelf(u)" class="self-tag">(You)</span>
+                    </span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Role Badge -->
+              <td>
+                <app-badge [text]="u.role" variant="role"></app-badge>
+              </td>
+
+              <!-- Access Level Badge -->
+              <td>
+                <app-badge [text]="u.accessLevel" variant="access"></app-badge>
+              </td>
+
+              <!-- Active Status -->
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="u.isActive ? 'badge-active' : 'badge-inactive'"
+                >
+                  {{ u.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+
+              <!-- Last Login -->
+              <td>
+                <span class="timestamp-text">
+                  {{ (u.lastLogin | date: 'mediumDate') || 'Never' }}
+                </span>
+              </td>
+
+              <!-- Action Buttons -->
+              <td class="td-actions">
+                <div class="actions-group">
+                  <!-- Edit Button -->
+                  <button
+                    type="button"
+                    class="action-btn edit-btn"
+                    (click)="openEditModal(u)"
+                    title="Edit user details"
+                  >
+                    ✏️ Edit
+                  </button>
+
+                  <!-- Reset Password Button -->
+                  <button
+                    type="button"
+                    class="action-btn reset-btn"
+                    (click)="openResetPasswordModal(u)"
+                    title="Reset user password"
+                  >
+                    🔑 Reset
+                  </button>
+
+                  <!-- Delete Button (Guarded for Self) -->
+                  <button
+                    type="button"
+                    class="action-btn delete-btn"
+                    [disabled]="isSelf(u)"
+                    (click)="openDeleteDialog(u)"
+                    [title]="isSelf(u) ? 'Administrators cannot delete their own account' : 'Delete user'"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <!-- Empty State -->
+          <tr *ngIf="!isLoading() && filteredUsers().length === 0">
+            <td colspan="6" class="empty-cell">
+              <div class="empty-state">
+                <span class="empty-icon">👥</span>
+                <h4>No users found</h4>
+                <p>Try matching with another query or create a new user account.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer-info">
+      Total Accounts: <strong>{{ users().length }}</strong> &bull; Showing: <strong>{{ filteredUsers().length }}</strong>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 1: CREATE USER
+       =================================================================== -->
+  <div *ngIf="isCreateModalOpen()" class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-card glass-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Create New User Account</h3>
+        <button type="button" class="close-modal-btn" (click)="closeCreateModal()">✕</button>
+      </div>
+
+      <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate>
+        <!-- User ID -->
+        <div class="form-group">
+          <label for="createUserId">User ID (Username)</label>
+          <input
+            id="createUserId"
+            type="text"
+            formControlName="userId"
+            class="form-input"
+            [class.is-invalid]="createForm.get('userId')?.invalid && createForm.get('userId')?.touched"
+            placeholder="e.g. dev_jane or admin_mike"
+          />
+          <div *ngIf="createForm.get('userId')?.invalid && createForm.get('userId')?.touched" class="form-error">
+            User ID is required (min 3 chars, letters/numbers/underscores).
+          </div>
+        </div>
+
+        <!-- Full Name -->
+        <div class="form-group">
+          <label for="createName">Full Name</label>
+          <input
+            id="createName"
+            type="text"
+            formControlName="name"
+            class="form-input"
+            [class.is-invalid]="createForm.get('name')?.invalid && createForm.get('name')?.touched"
+            placeholder="e.g. Jane Doe"
+          />
+        </div>
+
+        <!-- Initial Password -->
+        <div class="form-group">
+          <label for="createPassword">Initial Password</label>
+          <input
+            id="createPassword"
+            type="password"
+            formControlName="password"
+            class="form-input"
+            [class.is-invalid]="createForm.get('password')?.invalid && createForm.get('password')?.touched"
+            placeholder="At least 6 characters"
+          />
+        </div>
+
+        <div class="form-row">
+          <!-- Role Selector -->
+          <div class="form-group flex-1">
+            <label for="createRole">Role</label>
+            <select id="createRole" formControlName="role" class="form-input select-input">
+              <option *ngFor="let r of roleOptions" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+
+          <!-- Access Level Selector -->
+          <div class="form-group flex-1">
+            <label for="createAccess">Access Level</label>
+            <select id="createAccess" formControlName="accessLevel" class="form-input select-input">
+              <option *ngFor="let a of accessLevelOptions" [value]="a">{{ a }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || createForm.invalid">
+            <span *ngIf="isSubmitting()" class="spinner-sm"></span>
+            <span>{{ isSubmitting() ? 'Provisioning...' : 'Provision User' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 2: EDIT USER
+       =================================================================== -->
+  <div *ngIf="isEditModalOpen()" class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal-card glass-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Edit User: &#64;{{ selectedUser()?.userId }}</h3>
+        <button type="button" class="close-modal-btn" (click)="closeEditModal()">✕</button>
+      </div>
+
+      <div *ngIf="selectedUser() && isSelf(selectedUser()!)" class="self-warning-box">
+        ℹ️ You are editing your own administrator account. Self-demotion and account deactivation are disabled.
+      </div>
+
+      <form [formGroup]="editForm" (ngSubmit)="submitEdit()" novalidate>
+        <!-- Name -->
+        <div class="form-group">
+          <label for="editName">Full Name</label>
+          <input
+            id="editName"
+            type="text"
+            formControlName="name"
+            class="form-input"
+            [class.is-invalid]="editForm.get('name')?.invalid && editForm.get('name')?.touched"
+          />
+        </div>
+
+        <div class="form-row">
+          <!-- Role -->
+          <div class="form-group flex-1">
+            <label for="editRole">Role</label>
+            <select id="editRole" formControlName="role" class="form-input select-input">
+              <option *ngFor="let r of roleOptions" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+
+          <!-- Access Level -->
+          <div class="form-group flex-1">
+            <label for="editAccess">Access Level</label>
+            <select id="editAccess" formControlName="accessLevel" class="form-input select-input">
+              <option *ngFor="let a of accessLevelOptions" [value]="a">{{ a }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Active Toggle -->
+        <div class="form-group toggle-group">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="isActive" />
+            <span>Account Active & Permitted to Login</span>
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || editForm.invalid">
+            <span *ngIf="isSubmitting()" class="spinner-sm"></span>
+            <span>{{ isSubmitting() ? 'Saving...' : 'Save Changes' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 3: RESET PASSWORD
+       =================================================================== -->
+  <div *ngIf="isResetPasswordModalOpen()" class="modal-overlay" (click)="closeResetPasswordModal()">
+    <div class="modal-card glass-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Reset Password: &#64;{{ selectedUser()?.userId }}</h3>
+        <button type="button" class="close-modal-btn" (click)="closeResetPasswordModal()">✕</button>
+      </div>
+
+      <form [formGroup]="resetPasswordForm" (ngSubmit)="submitResetPassword()" novalidate>
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input
+            id="newPassword"
+            type="password"
+            formControlName="newPassword"
+            class="form-input"
+            [class.is-invalid]="resetPasswordForm.get('newPassword')?.invalid && resetPasswordForm.get('newPassword')?.touched"
+            placeholder="Min 6 characters"
+          />
+          <div *ngIf="resetPasswordForm.get('newPassword')?.invalid && resetPasswordForm.get('newPassword')?.touched" class="form-error">
+            Password must be at least 6 characters.
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeResetPasswordModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || resetPasswordForm.invalid">
+            <span *ngIf="isSubmitting()" class="spinner-sm"></span>
+            <span>{{ isSubmitting() ? 'Updating...' : 'Update Password' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL 4: DELETE CONFIRMATION DIALOG
+       =================================================================== -->
+  <app-confirm-dialog
+    [isOpen]="isDeleteDialogOpen()"
+    title="Delete User Account"
+    [message]="'Are you sure you want to permanently delete user @' + (selectedUser()?.userId || '') + '? This action cannot be reversed.'"
+    confirmText="Delete Account"
+    variant="danger"
+    [isLoading]="isSubmitting()"
+    (confirmed)="confirmDelete()"
+    (cancelled)="closeDeleteDialog()"
+  ></app-confirm-dialog>
+</div>

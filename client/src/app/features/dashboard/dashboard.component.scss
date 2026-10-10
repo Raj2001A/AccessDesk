@@ -1,0 +1,236 @@
+.dashboard-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header bar & Latency Controls */
+.dashboard-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+
+  .header-titles {
+    h2 {
+      font-size: 1.85rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.latency-control-card {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .control-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .latency-buttons {
+    display: flex;
+    gap: 6px;
+  }
+
+  .latency-btn {
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+
+    &:hover {
+      color: var(--text-main);
+      border-color: var(--primary-500);
+    }
+
+    &.active {
+      background: var(--primary-600);
+      color: #ffffff;
+      border-color: var(--primary-500);
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+    }
+  }
+}
+
+/* User Profile Banner */
+.user-profile-banner {
+  padding: 20px 24px;
+
+  .profile-skeleton-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .skeleton-text-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+  }
+
+  .profile-card-content {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+
+    .profile-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--primary-600), #8b5cf6);
+      color: #ffffff;
+      font-size: 1.3rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+      flex-shrink: 0;
+    }
+
+    .profile-info {
+      flex: 1;
+
+      .profile-title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+
+        h3 {
+          font-size: 1.25rem;
+          margin: 0;
+        }
+
+        .user-handle {
+          font-size: 0.85rem;
+          color: var(--text-muted);
+          font-family: monospace;
+        }
+      }
+
+      .profile-meta {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+
+        .dot-sep {
+          opacity: 0.4;
+        }
+      }
+    }
+
+    .refresh-btn {
+      margin-left: auto;
+    }
+  }
+}
+
+/* Stat Cards */
+.stat-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+
+  .stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .stat-label {
+      font-size: 0.725rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    .stat-icon {
+      font-size: 1.1rem;
+      opacity: 0.8;
+    }
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: var(--font-display);
+    color: var(--text-main);
+    line-height: 1.1;
+
+    small {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+
+    &.stat-warning {
+      color: var(--warning);
+    }
+  }
+
+  .stat-footnote {
+    font-size: 0.775rem;
+    color: var(--text-muted);
+  }
+}
+
+/* Dashboard Content Grid: Table + Timeline */
+.dashboard-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr;
+  }
+
+  .table-section {
+    min-width: 0;
+  }
+
+  .timeline-section {
+    position: sticky;
+    top: 92px;
+  }
+}

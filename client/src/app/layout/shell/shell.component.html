@@ -1,0 +1,139 @@
+<div class="shell-layout">
+  <!-- Top Progress Bar (Global HTTP loading state) -->
+  <div *ngIf="loadingService.isLoading()" class="global-progress-bar"></div>
+
+  <!-- Mobile Backdrop -->
+  <div
+    *ngIf="isSidebarOpen()"
+    class="mobile-backdrop"
+    (click)="closeSidebar()"
+  ></div>
+
+  <!-- Sidebar -->
+  <aside class="shell-sidebar" [class.is-open]="isSidebarOpen()">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h3>AccessDesk</h3>
+        <span>Enterprise Portal</span>
+      </div>
+    </div>
+
+    <!-- Navigation links -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">CORE NAVIGATION</div>
+
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        (click)="closeSidebar()"
+        class="nav-link"
+      >
+        <span class="nav-icon">📊</span>
+        <span>Dashboard & Records</span>
+      </a>
+
+      <!-- Admin-Only Section -->
+      <ng-container *ngIf="authService.isAdmin()">
+        <div class="nav-section-title">ADMINISTRATION</div>
+
+        <a
+          routerLink="/admin/users"
+          routerLinkActive="active"
+          (click)="closeSidebar()"
+          class="nav-link"
+        >
+          <span class="nav-icon">👥</span>
+          <span>User Management</span>
+          <span class="badge badge-admin badge-nav">Admin</span>
+        </a>
+      </ng-container>
+    </nav>
+
+    <!-- User Profile Footer Card in Sidebar -->
+    <div class="sidebar-user-card" *ngIf="authService.currentUser() as user">
+      <div class="user-avatar">
+        {{ user.name.charAt(0) }}
+      </div>
+      <div class="user-meta">
+        <span class="user-name">{{ user.name }}</span>
+        <span class="user-id">&#64;{{ user.userId }}</span>
+        <div class="user-badges">
+          <span
+            class="badge"
+            [ngClass]="{
+              'badge-admin': user.role === Role.Admin,
+              'badge-user': user.role === Role.GeneralUser
+            }"
+          >
+            {{ user.role }}
+          </span>
+          <span
+            class="badge"
+            [ngClass]="{
+              'badge-public': user.accessLevel === 'Public',
+              'badge-internal': user.accessLevel === 'Internal',
+              'badge-confidential': user.accessLevel === 'Confidential',
+              'badge-restricted': user.accessLevel === 'Restricted'
+            }"
+          >
+            {{ user.accessLevel }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="shell-main">
+    <!-- Topbar -->
+    <header class="shell-topbar">
+      <div class="topbar-left">
+        <button
+          type="button"
+          class="mobile-menu-btn"
+          (click)="toggleSidebar()"
+          aria-label="Toggle menu"
+        >
+          ☰
+        </button>
+        <div class="breadcrumb-container">
+          <span class="portal-tag">PORTAL</span>
+          <span class="crumb-separator">/</span>
+          <span class="current-view">Workspace</span>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <!-- Theme Toggle -->
+        <button
+          type="button"
+          class="icon-btn"
+          (click)="themeService.toggleTheme()"
+          [title]="'Switch to ' + (themeService.currentTheme() === 'dark' ? 'light' : 'dark') + ' theme'"
+        >
+          <span *ngIf="themeService.currentTheme() === 'dark'">☀️</span>
+          <span *ngIf="themeService.currentTheme() === 'light'">🌙</span>
+        </button>
+
+        <!-- Logout Button -->
+        <button
+          type="button"
+          class="btn btn-sm btn-secondary logout-btn"
+          (click)="logout()"
+        >
+          <span>🚪 Sign Out</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Routed Page Outlet -->
+    <main class="shell-page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

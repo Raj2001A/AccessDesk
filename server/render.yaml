@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: accessdesk-api
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: STORAGE
+        value: mongo
+      - key: MONGODB_URI
+        sync: false
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://accessdesk.vercel.app
